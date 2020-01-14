@@ -13,7 +13,7 @@
       </v-flex>
     </v-layout>
 
-    <v-layout row>
+    <v-layout row v-if="topics.length > 0">
       <v-flex xs12>
         <v-card flat class="header">
           <v-card-title primary-title>
@@ -90,8 +90,8 @@
                     color="success"
                     class="action-left"
                     @click="labelTweetAs({
-                      origin: tweetCategory, 
-                      index: props.index, 
+                      origin: tweetCategory,
+                      index: props.index,
                       label: tweetCategory,
                       tweet: props.item
                   })"
@@ -119,8 +119,8 @@
                     color="error"
                     class="action-left"
                     @click="labelTweetAs({
-                      origin: tweetCategory, 
-                      index: props.index, 
+                      origin: tweetCategory,
+                      index: props.index,
                       label: 'inquiry',
                       tweet: props.item
                   })"
@@ -132,8 +132,8 @@
                     color="error"
                     class="action-left"
                     @click="labelTweetAs({
-                      origin: tweetCategory, 
-                      index: props.index, 
+                      origin: tweetCategory,
+                      index: props.index,
                       label: 'irrelevant',
                       tweet: props.item
                   })"

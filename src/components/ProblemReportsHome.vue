@@ -3,6 +3,16 @@
     <v-layout row>
       <filter-tool-bar/>
     </v-layout>
+
+    <v-layout v-if="trends !== null" row full-row-widget>
+      <v-flex xs6 left-half-row-widget>
+        <topic-trend-report title="Rising Trends" :trends="trends['rising']" />
+      </v-flex>
+      <v-flex xs6 left-half-row-widget>
+        <topic-trend-report title="Falling Trends" :trends="trends['falling']" />
+      </v-flex>
+    </v-layout>
+
     <v-layout row>
       <v-flex xs12>
         <v-card flat class="header">
@@ -153,11 +163,13 @@ import {
   ACTION_UPDATE_TWEET
 } from "./../store/types.js";
 import { FILTER_FOR_TOPIC, FILTER_FOR_CATEGORY } from "./../dataFilter.js";
+import {GET_TRENDING_TOPICS_ENDPOINT} from "../RESTconf";
 
 export default {
   name: "ProblemReportsHome",
   components: {
-    "filter-tool-bar": () => import("./toolbar/FilterToolBar")
+    "filter-tool-bar": () => import("./toolbar/FilterToolBar"),
+    "topic-trend-report": () => import("./widget/topic/TopicTrendReport"),
   },
   data() {
     return {
@@ -197,7 +209,8 @@ export default {
       data: [],
       searchQuery: "",
       topics: [],
-      topic: ""
+      topic: "",
+      trends: null,
     };
   },
   methods: {
@@ -336,10 +349,22 @@ export default {
           sentimentScore: 0
         });
       });
+    },
+    fetchTrends() {
+      axios
+          .get(GET_TRENDING_TOPICS_ENDPOINT('FitbitSupport'), {params: {
+              start: '2019-12-02',
+              end: '2019-12-09',
+            }})
+          .then(response => this.trends = response.data)
+          .catch(e => {
+            this.errors.push(e);
+          });
     }
   },
   mounted() {
     this.setupTopics();
+    this.fetchTrends();
     this.$store.watch(
       (state, getters) => getters.filteredTweets,
       (newValue, oldValue) => {

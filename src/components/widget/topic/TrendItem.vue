@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div @click="$emit('click')" :class="{'trend-item': true, 'selected': selected}">
 		<v-card-text>
 			{{trend.representative.text}}
 		</v-card-text>
@@ -15,7 +15,7 @@
 <script>
 	export default {
 		name: "TrendItem",
-		props: ['trend'],
+		props: ['trend', 'selected'],
 		computed: {
 			change: function () {
 				const {occurrences: {before, current}} = this.trend;
@@ -40,5 +40,10 @@
 </script>
 
 <style scoped>
-
+	.trend-item {
+		cursor: pointer;
+	}
+	.trend-item.selected {
+		background-color: #def7f6;
+	}
 </style>

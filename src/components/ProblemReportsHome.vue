@@ -5,11 +5,14 @@
     </v-layout>
 
     <v-layout v-if="trends !== null" row full-row-widget>
-      <v-flex xs6 left-half-row-widget>
-        <topic-trend-report title="Rising Trends" :trends="trends['rising']" />
-      </v-flex>
-      <v-flex xs6 left-half-row-widget>
-        <topic-trend-report title="Falling Trends" :trends="trends['falling']" />
+      <v-flex xs6 left-half-row-widget v-for="[key, title] in [['rising', 'Rising Trends'], ['falling', 'Falling Trends']]">
+        <topic-trend-report
+            :key="key"
+            :title="title"
+            :trends="trends[key].slice(0, 3)"
+            @select="onClickTopic"
+            :selected="selectedTopic"
+        />
       </v-flex>
     </v-layout>
 
@@ -70,7 +73,7 @@
     </v-card>
     <v-data-table
       :headers="tableHeaders"
-      :items="data"
+      :items="visibleTweets"
       :search="searchQuery"
       :custom-sort="customTableSort"
       :pagination.sync="pagination"
@@ -163,7 +166,8 @@ import {
   ACTION_UPDATE_TWEET
 } from "./../store/types.js";
 import { FILTER_FOR_TOPIC, FILTER_FOR_CATEGORY } from "./../dataFilter.js";
-import {GET_TRENDING_TOPICS_ENDPOINT} from "../RESTconf";
+import {GET_TOPIC_ENDPOINT, GET_TRENDING_TOPICS_ENDPOINT} from "../RESTconf";
+import {conjoin} from "../util";
 
 export default {
   name: "ProblemReportsHome",
@@ -211,9 +215,34 @@ export default {
       topics: [],
       topic: "",
       trends: null,
+      selectedTopic: null,
     };
   },
+  computed: {
+    visibleTweets: function () {
+      const filters = [];
+
+      if (this.selectedTopic !== null) {
+        const ids = new Set(this.selectedTopic['member_ids']);
+        filters.push(tweet => ids.has(tweet.status_id));
+      }
+
+      return this.data.filter(conjoin(...filters));
+    },
+  },
   methods: {
+    onClickTopic(topic) {
+      if (this.selectedTopic && (this.selectedTopic.topic_id === topic.topic_id)) {
+        this.selectedTopic = null;
+      } else {
+        axios
+            .get(GET_TOPIC_ENDPOINT('FitbitSupport', topic.topic_id))
+            .then(response => this.selectedTopic = response.data)
+            .catch(e => {
+              this.errors.push(e);
+            });
+      }
+    },
     loadData(tweets, topic) {
       //Sorted by creation date
       this.data = tweets.filter(FILTER_FOR_CATEGORY(this.tweetCategory));
@@ -360,7 +389,7 @@ export default {
           .catch(e => {
             this.errors.push(e);
           });
-    }
+    },
   },
   mounted() {
     this.setupTopics();
@@ -369,10 +398,10 @@ export default {
       (state, getters) => getters.filteredTweets,
       (newValue, oldValue) => {
         this.loadData([...newValue], this.topic);
-      }
+      },
     );
     this.$store.dispatch(ACTION_SET_TOOLBAR_HEADER, this.tooblarTitle);
-  }
+  },
 };
 </script>
 

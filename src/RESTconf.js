@@ -73,3 +73,6 @@ export const POST_RETRIEVE_ACCESS_KEY_CONFIGURATION_PAYLOAD = function (accessKe
 export const GET_TRENDING_TOPICS_ENDPOINT = function (twitterAccount) {
   return `${BASE_URL}/ri-topics/${twitterAccount}/trends`;
 };
+export const GET_TOPIC_ENDPOINT = function (twitterAccount, topicId) {
+  return `http://localhost:8888/${twitterAccount}/topics/${topicId}`;
+};

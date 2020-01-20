@@ -4,7 +4,11 @@
 
 		<div v-for="trend in trends">
 			<v-divider horizontal/>
-			<TrendItem :trend="trend" />
+			<TrendItem
+					:trend="trend"
+					@click="$emit('select', trend)"
+					:selected="selected && (selected.topic_id === trend.topic_id)"
+			/>
 		</div>
 	</v-card>
 </template>
@@ -14,7 +18,7 @@
 	export default {
 		name: "TopicTrendReport",
 		components: {TrendItem},
-		props: ['title', 'trends'],
+		props: ['title', 'trends', 'selected'],
 	};
 </script>
 

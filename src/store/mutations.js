@@ -14,6 +14,10 @@ export const mutateSelectedTwitterAccounts = (state, selectedTwitterAccounts) =>
   state.selectedTwitterAccounts = selectedTwitterAccounts;
 };
 
+export const mutateSelectedDateRange = (state, dateRange) => {
+  state.selectedDateRange = dateRange;
+};
+
 export const mutateSelectedTopics = (state, topics) => {
   state.selectedTopics = topics;
 };

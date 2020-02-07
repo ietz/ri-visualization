@@ -139,7 +139,8 @@ import TopToolBar from "./TopToolBar";
 import {
   ACTION_FILTER_TWEETS,
   MUTATE_SELECTED_TOPICS,
-  MUTATE_SELECTED_TWITTER_ACCOUNTS
+  MUTATE_SELECTED_TWITTER_ACCOUNTS,
+  MUTATE_SELECTED_DATE_RANGE,
 } from "./../../store/types";
 import { BLUE_FILL } from "../../colors.js";
 import moment from "moment";
@@ -233,6 +234,12 @@ export default {
           this.selectedTopics = this.topics.slice();
         }
       });
+    },
+    updateDateRange() {
+      this.$store.commit(
+        MUTATE_SELECTED_DATE_RANGE,
+        {from: this.dateFrom, to: this.dateTo}
+      );
     }
   },
   computed: {
@@ -300,6 +307,12 @@ export default {
         MUTATE_SELECTED_TWITTER_ACCOUNTS,
         this.selectedTwitterAccounts
       );
+    },
+    dateFrom() {
+      this.updateDateRange();
+    },
+    dateTo() {
+      this.updateDateRange();
     },
     selectedTopics() {
       this.$store.commit(MUTATE_SELECTED_TOPICS, this.selectedTopics);

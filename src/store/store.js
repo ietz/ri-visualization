@@ -13,6 +13,10 @@ export const store = new Vuex.Store({
     tweets: {},
     selectedTwitterAccounts: [],
     selectedTopics: [],
+    selectedDateRange: {
+      from: null,
+      to: null,
+    },
     initialDataLoaded: false,
     filteredTweets: [],
     dataUpToDate: false,

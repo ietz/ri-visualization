@@ -167,6 +167,7 @@ import {
 import { FILTER_FOR_TOPIC, FILTER_FOR_CATEGORY } from "./../dataFilter.js";
 import {GET_TOPIC_ENDPOINT, GET_TRENDING_TOPICS_ENDPOINT} from "../RESTconf";
 import {conjoin} from "../util";
+import {subDays, format} from "date-fns";
 
 export default {
   name: "ProblemReportsHome",
@@ -393,12 +394,16 @@ export default {
       });
     },
     fetchTrends() {
-      this.$store.state.selectedTwitterAccounts.forEach(accountName => {
+      const {selectedDateRange, twitterAccounts} = this.$store.state;
+      const dateTo = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date();
+      const dateFrom = selectedDateRange.from ? new Date(selectedDateRange.from) : subDays(dateTo, 7);
+
+      twitterAccounts.forEach(accountName => {
         axios
             .get(GET_TRENDING_TOPICS_ENDPOINT(accountName), {
               params: {
-                start: '2019-12-02',
-                end: '2019-12-09',
+                start: format(dateFrom, 'YYYY-MM-DD'),
+                end: format(dateTo, 'YYYY-MM-DD'),
               }
             })
             .then(response => this.$set(this.accountTrends, accountName, response.data))
@@ -416,6 +421,10 @@ export default {
       (newValue, oldValue) => {
         this.loadData([...newValue], this.topic);
       },
+    );
+    this.$store.watch(
+            (state) => state.selectedDateRange,
+            () => this.fetchTrends(),
     );
     this.$store.dispatch(ACTION_SET_TOOLBAR_HEADER, this.tooblarTitle);
   },

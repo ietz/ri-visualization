@@ -22,6 +22,7 @@ export const MUTATE_TWEETS = 'mutateTweets';
 export const MUTATE_TWITTER_ACCOUNTS = 'mutateTwitterAccounts';
 export const MUTATE_SELECTED_TOPICS = 'mutateSelectedTopics';
 export const MUTATE_SELECTED_TWITTER_ACCOUNTS = 'mutateSelectedTwitterAccounts';
+export const MUTATE_SELECTED_DATE_RANGE = 'mutateSelectedDateRange';
 export const MUTATE_RESET_UNLABELED_TWEETS = 'mutateResetUnlabeledTweets';
 export const MUTATE_UNLABELED_TWEETS = 'mutateUnlabeledTweets';
 export const MUTATE_INITIAL_DATA = 'mutateInitalData';

@@ -5,9 +5,8 @@
     </v-layout>
 
     <v-layout v-if="trends !== null" row full-row-widget>
-      <v-flex xs6 left-half-row-widget v-for="[key, title] in [['rising', 'Rising Trends'], ['falling', 'Falling Trends']]">
+      <v-flex xs6 left-half-row-widget v-for="[key, title] in [['rising', 'Rising Trends'], ['falling', 'Falling Trends']]" :key="key">
         <topic-trend-report
-            :key="key"
             :title="title"
             :trends="trends[key].slice(0, 3)"
             @select="onClickTopic"

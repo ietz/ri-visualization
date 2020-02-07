@@ -251,7 +251,7 @@ export default {
       } else {
         axios
             .get(GET_TOPIC_ENDPOINT(topic.accountName, topic.topic_id))
-            .then(response => this.selectedTopic = response.data)
+            .then(response => this.selectedTopic = {...response.data, accountName: topic.accountName})
             .catch(e => {
               this.errors.push(e);
             });

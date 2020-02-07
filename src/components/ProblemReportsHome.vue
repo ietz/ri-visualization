@@ -4,7 +4,7 @@
       <filter-tool-bar/>
     </v-layout>
 
-    <v-layout v-if="trends !== null" row full-row-widget>
+    <v-layout v-if="trends && (trends.rising.length > 0 || trends.falling.length > 0)" row full-row-widget>
       <v-flex xs6 left-half-row-widget v-for="[key, title] in [['rising', 'Rising Trends'], ['falling', 'Falling Trends']]" :key="key">
         <topic-trend-report
             :title="title"
@@ -213,7 +213,7 @@ export default {
       searchQuery: "",
       topics: [],
       topic: "",
-      trends: null,
+      accountTrends: {},
       selectedTopic: null,
     };
   },
@@ -228,14 +228,28 @@ export default {
 
       return this.data.filter(conjoin(...filters));
     },
+    trends: function () {
+      const ascending = (a, b) => a.score - b.score;
+      const descending = (a, b) => b.score - a.score;
+
+      const merged = (property, order) => this.$store.state.selectedTwitterAccounts
+          .filter(accountName => this.accountTrends.hasOwnProperty(accountName))
+          .flatMap(accountName => this.accountTrends[accountName][property].map(trend => ({...trend, accountName})))
+          .sort(order);
+
+      return {
+        rising: merged('rising', descending),
+        falling: merged('falling', ascending),
+      };
+    },
   },
   methods: {
     onClickTopic(topic) {
-      if (this.selectedTopic && (this.selectedTopic.topic_id === topic.topic_id)) {
+      if (this.selectedTopic && (this.selectedTopic.topic_id === topic.topic_id && this.selectedTopic.accountName === topic.accountName)) {
         this.selectedTopic = null;
       } else {
         axios
-            .get(GET_TOPIC_ENDPOINT('FitbitSupport', topic.topic_id))
+            .get(GET_TOPIC_ENDPOINT(topic.accountName, topic.topic_id))
             .then(response => this.selectedTopic = response.data)
             .catch(e => {
               this.errors.push(e);
@@ -351,7 +365,7 @@ export default {
       //Calculate number of tweets per topic
       this.topics.forEach(topic => {
         topic.tweetsNumber = tweets.filter(
-          FILTER_FOR_TOPIC(topic.label)
+                FILTER_FOR_TOPIC(topic.label)
         ).length;
       });
     },
@@ -379,15 +393,19 @@ export default {
       });
     },
     fetchTrends() {
-      axios
-          .get(GET_TRENDING_TOPICS_ENDPOINT('FitbitSupport'), {params: {
-              start: '2019-12-02',
-              end: '2019-12-09',
-            }})
-          .then(response => this.trends = response.data)
-          .catch(e => {
-            this.errors.push(e);
-          });
+      this.$store.state.selectedTwitterAccounts.forEach(accountName => {
+        axios
+            .get(GET_TRENDING_TOPICS_ENDPOINT(accountName), {
+              params: {
+                start: '2019-12-02',
+                end: '2019-12-09',
+              }
+            })
+            .then(response => this.$set(this.accountTrends, accountName, response.data))
+            .catch(e => {
+              this.errors.push(e);
+            });
+      });
     },
   },
   mounted() {

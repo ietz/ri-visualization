@@ -130,7 +130,7 @@ import {
   MUTATE_ACCESS_KEY,
   LOCAL_STORAGE_ACCESS_KEY
 } from "../store/types.js";
-import TopicsOfInterest from "./widget/trend/TopicsOfInterest";
+import TopicsOfInterest from "./widget/topic/TopicsOfInterest";
 export default {
   name: "SettingsHome",
   components: {TopicsOfInterest},

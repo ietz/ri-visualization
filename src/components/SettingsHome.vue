@@ -55,10 +55,10 @@
                 class="action-button-add"
                 :disabled="!valid"
                 @click="addTwitterAccount({
-              account_name: newTwitterAccount, 
+              account_name: newTwitterAccount,
               lang: newTwitterAccountLang,
               interval: newTwitterAccountInterval,
-              valid: false, 
+              valid: false,
               checking_validity: true,
           })"
               >add</v-btn>
@@ -108,6 +108,10 @@
         <v-btn small color="primary" @click="changeAccessKey">change</v-btn>
       </v-card-text>
     </v-card>
+
+    <br>
+
+    <TopicsOfInterest />
   </v-container>
 </template>
 
@@ -126,8 +130,10 @@ import {
   MUTATE_ACCESS_KEY,
   LOCAL_STORAGE_ACCESS_KEY
 } from "../store/types.js";
+import TopicsOfInterest from "./widget/trend/TopicsOfInterest";
 export default {
   name: "SettingsHome",
+  components: {TopicsOfInterest},
   data() {
     return {
       tableHeaders: [

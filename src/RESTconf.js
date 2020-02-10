@@ -70,6 +70,9 @@ export const POST_RETRIEVE_ACCESS_KEY_CONFIGURATION_PAYLOAD = function (accessKe
   };
   return JSON.stringify(payload);
 };
+export const GET_FREQUENT_TOPICS_ENDPOINT = function (twitterAccount) {
+  return `${BASE_URL}/ri-topics/${twitterAccount}/frequent`;
+};
 export const GET_TRENDING_TOPICS_ENDPOINT = function (twitterAccount) {
   return `${BASE_URL}/ri-topics/${twitterAccount}/trends`;
 };

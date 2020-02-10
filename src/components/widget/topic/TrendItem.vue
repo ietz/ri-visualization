@@ -1,10 +1,20 @@
+import {format} from "date-fns";
 <template>
-	<div @click="$emit('click')" :class="{'trend-item': true, 'selected': selected}">
+	<div @click="(ev) => !editing && $emit('click', ev)" :class="{'trend-item': true, 'selected': selected}">
 		<v-card-text>
-			{{trend.representative.text}}
+			<textarea
+				ref="nameInput"
+				v-model="name"
+				placeholder="Topic name"
+				:disabled="!editing"
+				style="width: 100%"
+				rows="1"
+				@blur="onBlurTextarea" />
 		</v-card-text>
 
 		<v-layout align-center justify-end>
+			<v-icon v-if="selected" class="mr-4" small @click.stop="startEdit">edit</v-icon>
+
 			<span class="subheading mr-2">{{trend.occurrences.current}}</span>
 			<span :class="textClass">{{changeText}}</span>
 
@@ -15,9 +25,17 @@
 </template>
 
 <script>
+	import autosize from 'autosize';
+	import axios from "axios";
+	import {PATCH_TOPIC_ENDPOINT} from "../../../RESTconf";
+
 	export default {
 		name: "TrendItem",
 		props: ['trend', 'selected'],
+		data: () => ({
+			editing: false,
+			name: '',
+		}),
 		computed: {
 			change: function () {
 				const {occurrences: {before, current}} = this.trend;
@@ -39,6 +57,33 @@
 			textClass: function () {
 				return this.isPositive ? 'green--text' : 'red--text';
 			},
+		},
+		watch: {
+			selected: function () {
+				if (!this.selected) {
+					this.editing = false;
+				}
+			},
+		},
+		methods: {
+			startEdit() {
+				this.editing = true;
+				setTimeout(() => this.$refs.nameInput.focus(), 0);
+			},
+			onBlurTextarea() {
+				this.editing = false;
+				axios
+					.patch(PATCH_TOPIC_ENDPOINT(this.trend.accountName, this.trend.topic_id), {
+						'name': this.name,
+					})
+					.catch(e => {
+						this.errors.push(e);
+					});
+			},
+		},
+		mounted() {
+			this.name = this.trend.name || this.trend.representative.text;
+			autosize(this.$refs.nameInput)
 		}
 	}
 </script>

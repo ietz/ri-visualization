@@ -74,5 +74,8 @@ export const GET_TRENDING_TOPICS_ENDPOINT = function (twitterAccount) {
   return `${BASE_URL}/ri-topics/${twitterAccount}/trends`;
 };
 export const GET_TOPIC_ENDPOINT = function (twitterAccount, topicId) {
-  return `http://localhost:8888/${twitterAccount}/topics/${topicId}`;
+  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/${topicId}`;
+};
+export const PATCH_TOPIC_ENDPOINT = function (twitterAccount, topicId) {
+  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/${topicId}`;
 };

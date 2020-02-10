@@ -28,3 +28,12 @@ export const selectedTopics = state => {
 export const dataUpToDate = state => {
   return state.dataUpToDate;
 };
+export const isTopicOfInterest = state => (accountName, topicId) => {
+  const interests = state.topicsOfInterest[accountName];
+
+  return (
+    !interests || // no account specific settings
+    !(topicId in interests) || // topic not explicitly ignored
+    interests[topicId]
+  );
+};

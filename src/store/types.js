@@ -28,6 +28,7 @@ export const MUTATE_UNLABELED_TWEETS = 'mutateUnlabeledTweets';
 export const MUTATE_INITIAL_DATA = 'mutateInitalData';
 export const MUTATE_FILTERED_TWEETS = 'mutateFilteredTweets';
 export const MUTATE_TOOLBAR_HEADER = 'mutateToobarHeader';
+export const MUTATE_TOPIC_INTEREST = 'mutateTopicInterest';
 
 /*
  *  Local storage types

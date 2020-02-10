@@ -17,6 +17,7 @@ export const store = new Vuex.Store({
       from: null,
       to: null,
     },
+    topicsOfInterest: {},
     initialDataLoaded: false,
     filteredTweets: [],
     dataUpToDate: false,

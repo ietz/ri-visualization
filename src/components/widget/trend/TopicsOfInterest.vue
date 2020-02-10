@@ -15,16 +15,11 @@
                     single-line
                     class="selector-lang" />
 
-            <v-list v-if="accountData.hasOwnProperty(accountName)">
-                <v-list-tile @click="" v-for="data in accountData[accountName]" :key="data.topic.topic_id" class="topic-interest-tile">
-                    <v-list-tile-action>
-                        <v-checkbox v-model="data.interest" />
-                    </v-list-tile-action>
-
-                    <v-list-tile-content @click="data.interest = !data.interest">
-                        {{data.topic.name || data.topic.representative.text}}
-                    </v-list-tile-content>
-                </v-list-tile>
+            <v-list v-if="accountTopics.hasOwnProperty(accountName)">
+                <TopicOfInterestTile
+                        v-for="topic in accountTopics[accountName]"
+                        :key="topic.topic_id"
+                        :topic="topic" />
             </v-list>
         </v-card-text>
     </v-card>
@@ -33,39 +28,26 @@
 <script>
   import {GET_FREQUENT_TOPICS_ENDPOINT} from "../../../RESTconf";
   import axios from "axios";
+  import TopicOfInterestTile from "./TopicOfInterestTile";
 
   export default {
     name: "TopicsOfInterest",
+    components: {TopicOfInterestTile},
     data: () => ({
       accountName: '',
-      accountData: {},
+      accountTopics: {},
     }),
     mounted() {
       this.$store.state.twitterAccounts.forEach((accountName) => {
         axios
           .get(GET_FREQUENT_TOPICS_ENDPOINT(accountName))
-          .then(response => {
-            const accountData = response.data.reduce((acc, topic) =>
-              ({...acc, [topic.topic_id]: {topic, interest: true}}),
-              {},
-            );
-            this.$set(this.accountData, accountName, accountData);
-          })
+          .then(response => this.$set(this.accountTopics, accountName, response.data.map(topic => ({...topic, accountName}))));
         }
-      )
-    }
+      );
+    },
   }
 </script>
 
-<style>
-    .topic-interest-tile .v-list__tile {
-        height: auto;
-    }
+<style scoped>
 
-    .topic-interest-tile .v-list__tile__content {
-        height: auto;
-
-        padding-top: 16px;
-        padding-bottom: 16px;
-    }
 </style>

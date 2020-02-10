@@ -1,3 +1,5 @@
+import Vue from 'vue';
+
 export const mutateInitalData = (state, initialData) => {
   state.tweets = Object.assign({}, state.tweets, initialData);
   let hasAllKeys = state.twitterAccounts.every(function (item) {
@@ -45,4 +47,11 @@ export const mutateToobarHeader = (state, title) => {
 export const mutateFilteredTweets = (state, filteredTweets) => {
   state.dataUpToDate = true;
   state.filteredTweets = filteredTweets;
+};
+
+export const mutateTopicInterest = (state, {accountName, topicId, value}) => {
+  Vue.set(state.topicsOfInterest, accountName, {
+    ...(state.topicsOfInterest[accountName] || {}),
+    [topicId]: value
+  });
 };

@@ -64,6 +64,12 @@ import {format} from "date-fns";
 					this.editing = false;
 				}
 			},
+			trend: function () {
+				const newText = this.trend.name || this.trend.representative.text;
+				if (newText !== this.name) {
+					this.name = newText;
+				}
+			}
 		},
 		methods: {
 			startEdit() {

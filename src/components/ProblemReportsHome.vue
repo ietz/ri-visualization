@@ -236,6 +236,7 @@ export default {
       const merged = (property, order) => this.$store.state.selectedTwitterAccounts
           .filter(accountName => this.accountTrends.hasOwnProperty(accountName))
           .flatMap(accountName => this.accountTrends[accountName][property].map(trend => ({...trend, accountName})))
+          .filter(({accountName, topic_id: topicId}) => this.$store.getters.isTopicOfInterest(accountName, topicId))
           .sort(order);
 
       return {

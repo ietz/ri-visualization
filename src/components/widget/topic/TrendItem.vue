@@ -26,8 +26,7 @@ import {format} from "date-fns";
 
 <script>
 	import autosize from 'autosize';
-	import axios from "axios";
-	import {PATCH_TOPIC_ENDPOINT} from "../../../RESTconf";
+	import {ACTION_PATCH_TOPIC} from "../../../store/types";
 
 	export default {
 		name: "TrendItem",
@@ -78,13 +77,13 @@ import {format} from "date-fns";
 			},
 			onBlurTextarea() {
 				this.editing = false;
-				axios
-					.patch(PATCH_TOPIC_ENDPOINT(this.trend.accountName, this.trend.topic_id), {
-						'name': this.name,
-					})
-					.catch(e => {
-						this.errors.push(e);
-					});
+				this.$store.dispatch(ACTION_PATCH_TOPIC, {
+					accountName: this.trend.accountName,
+					topicId: this.trend.topic_id,
+					patch: {
+						name: this.name,
+					}
+				});
 			},
 		},
 		mounted() {

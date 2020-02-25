@@ -9,7 +9,7 @@
         <topic-trend-report
             :title="title"
             :trends="trends[key].slice(0, 3)"
-            @select="onClickTopic"
+            @select="onClickTrend"
             :selected="selectedTopic"
         />
       </v-flex>
@@ -165,9 +165,8 @@ import {
   ACTION_UPDATE_TWEET
 } from "./../store/types.js";
 import { FILTER_FOR_TOPIC, FILTER_FOR_CATEGORY } from "./../dataFilter.js";
-import {GET_TOPIC_ENDPOINT, GET_TRENDING_TOPICS_ENDPOINT} from "../RESTconf";
 import {conjoin} from "../util";
-import {subDays, format} from "date-fns";
+import {subDays, differenceInDays} from "date-fns";
 
 export default {
   name: "ProblemReportsHome",
@@ -215,7 +214,7 @@ export default {
       topics: [],
       topic: "",
       accountTrends: {},
-      selectedTopic: null,
+      selectedTopicData: null,
     };
   },
   computed: {
@@ -230,32 +229,58 @@ export default {
       return this.data.filter(conjoin(...filters));
     },
     trends: function () {
-      const ascending = (a, b) => a.score - b.score;
-      const descending = (a, b) => b.score - a.score;
+      const {selectedDateRange} = this.$store.state;
+      // compareDateFrom | 1 2 … n | currentDateFrom | 1 2 … n | currentDateTo
+      const currentDateTo = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date();
+      const currentDateFrom = selectedDateRange.from ? new Date(selectedDateRange.from) : subDays(currentDateTo, 7);
+      const compareDateFrom = subDays(currentDateFrom, differenceInDays(currentDateTo, currentDateFrom));
 
-      const merged = (property, order) => this.$store.state.selectedTwitterAccounts
-          .filter(accountName => this.accountTrends.hasOwnProperty(accountName))
-          .flatMap(accountName => this.accountTrends[accountName][property].map(trend => ({...trend, accountName})))
-          .filter(({accountName, topic_id: topicId}) => this.$store.getters.isTopicOfInterest(accountName, topicId))
-          .sort(order);
+      const tweetIdsInRange = (dateFrom, dateTo) => new Set(
+              this.$store.getters.customFilteredTweets({fromDate: dateFrom, toDate: dateTo})
+                      .map(tweet => tweet.status_id)
+      );
+
+      const currentTweetIds = tweetIdsInRange(currentDateFrom, currentDateTo);
+      const compareTweetIds = tweetIdsInRange(compareDateFrom, currentDateFrom);
+
+      const countIn = (items, set) => items.reduce((acc, v) => acc + set.has(v), 0);
+      const topics = Object.entries(this.$store.state.topics)
+              .flatMap(([accountName, topics]) => Object.values(topics).filter(topic => (
+                this.$store.getters.isTopicOfInterest(accountName, topic.topic_id)
+              )));
+      const trends = topics.map(topic => {
+        const occurrences = {
+          current: countIn(topic.member_ids, currentTweetIds),
+          before: countIn(topic.member_ids, compareTweetIds),
+        };
+        const score = occurrences.current - occurrences.before;
+
+        return {...topic, occurrences, score};
+      }).sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
 
       return {
-        rising: merged('rising', descending),
-        falling: merged('falling', ascending),
+        rising: trends.filter(({score}) => score > 0),
+        falling: trends.filter(({score}) => score < 0),
       };
     },
+    selectedTopic: function () {
+      if (!this.selectedTopicData) {
+        return null;
+      } else {
+        const {accountName, topic_id} = this.selectedTopicData;
+        return this.$store.state.topics[accountName][topic_id];
+      }
+    }
   },
   methods: {
-    onClickTopic(topic) {
-      if (this.selectedTopic && (this.selectedTopic.topic_id === topic.topic_id && this.selectedTopic.accountName === topic.accountName)) {
-        this.selectedTopic = null;
+    onClickTrend(clickedTrend) {
+      if (this.selectedTopicData && (this.selectedTopicData.topic_id === clickedTrend.topic_id && this.selectedTopicData.accountName === clickedTrend.accountName)) {
+        this.selectedTopicData = null;
       } else {
-        axios
-            .get(GET_TOPIC_ENDPOINT(topic.accountName, topic.topic_id))
-            .then(response => this.selectedTopic = {...response.data, accountName: topic.accountName})
-            .catch(e => {
-              this.errors.push(e);
-            });
+        this.selectedTopicData = {
+          accountName: clickedTrend.accountName,
+          topic_id: clickedTrend.topic_id,
+        };
       }
     },
     loadData(tweets, topic) {
@@ -394,38 +419,14 @@ export default {
         });
       });
     },
-    fetchTrends() {
-      const {selectedDateRange, twitterAccounts} = this.$store.state;
-      const dateTo = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date();
-      const dateFrom = selectedDateRange.from ? new Date(selectedDateRange.from) : subDays(dateTo, 7);
-
-      twitterAccounts.forEach(accountName => {
-        axios
-            .get(GET_TRENDING_TOPICS_ENDPOINT(accountName), {
-              params: {
-                start: format(dateFrom, 'YYYY-MM-DD'),
-                end: format(dateTo, 'YYYY-MM-DD'),
-              }
-            })
-            .then(response => this.$set(this.accountTrends, accountName, response.data))
-            .catch(e => {
-              this.errors.push(e);
-            });
-      });
-    },
   },
   mounted() {
     this.setupTopics();
-    this.fetchTrends();
     this.$store.watch(
       (state, getters) => getters.filteredTweets,
       (newValue, oldValue) => {
         this.loadData([...newValue], this.topic);
       },
-    );
-    this.$store.watch(
-            (state) => state.selectedDateRange,
-            () => this.fetchTrends(),
     );
     this.$store.dispatch(ACTION_SET_TOOLBAR_HEADER, this.tooblarTitle);
   },

@@ -55,3 +55,10 @@ export const mutateTopicInterest = (state, {accountName, topicId, value}) => {
     [topicId]: value
   });
 };
+
+export const mutateTopic = (state, {accountName, topicId, patch}) => {
+  Vue.set(state.topics[accountName], topicId, {
+    ...state.topics[accountName][topicId],
+    ...patch,
+  });
+};

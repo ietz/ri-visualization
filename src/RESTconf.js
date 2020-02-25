@@ -70,15 +70,9 @@ export const POST_RETRIEVE_ACCESS_KEY_CONFIGURATION_PAYLOAD = function (accessKe
   };
   return JSON.stringify(payload);
 };
-export const GET_FREQUENT_TOPICS_ENDPOINT = function (twitterAccount) {
-  return `${BASE_URL}/ri-topics/${twitterAccount}/frequent`;
-};
-export const GET_TRENDING_TOPICS_ENDPOINT = function (twitterAccount) {
-  return `${BASE_URL}/ri-topics/${twitterAccount}/trends`;
-};
-export const GET_TOPIC_ENDPOINT = function (twitterAccount, topicId) {
-  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/${topicId}`;
+export const GET_TOPICS_ENDPOINT = function (twitterAccount) {
+  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/`;
 };
 export const PATCH_TOPIC_ENDPOINT = function (twitterAccount, topicId) {
-  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/${topicId}`;
+  return `${BASE_URL}/ri-topics/${twitterAccount}/topics/${topicId}/`;
 };

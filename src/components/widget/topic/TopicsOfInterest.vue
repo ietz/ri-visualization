@@ -17,7 +17,7 @@
 
             <v-list v-if="accountTopics.hasOwnProperty(accountName)">
                 <TopicOfInterestTile
-                        v-for="topic in accountTopics[accountName]"
+                        v-for="topic in Object.values(accountTopics[accountName])"
                         :key="topic.topic_id"
                         :topic="topic" />
             </v-list>
@@ -26,8 +26,6 @@
 </template>
 
 <script>
-  import {GET_FREQUENT_TOPICS_ENDPOINT} from "../../../RESTconf";
-  import axios from "axios";
   import TopicOfInterestTile from "./TopicOfInterestTile";
 
   export default {
@@ -35,15 +33,11 @@
     components: {TopicOfInterestTile},
     data: () => ({
       accountName: '',
-      accountTopics: {},
     }),
-    mounted() {
-      this.$store.state.twitterAccounts.forEach((accountName) => {
-        axios
-          .get(GET_FREQUENT_TOPICS_ENDPOINT(accountName))
-          .then(response => this.$set(this.accountTopics, accountName, response.data.map(topic => ({...topic, accountName}))));
-        }
-      );
+    computed: {
+      accountTopics: function () {
+        return this.$store.state.topics;
+      }
     },
   }
 </script>

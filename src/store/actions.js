@@ -1,78 +1,58 @@
 import axios from 'axios';
-import moment from "moment";
 import "moment/locale/de";
 import {
-  GET_ALL_TWEETS_ENDPOINT
+  GET_ALL_TWEETS_ENDPOINT,
+  GET_TOPICS_ENDPOINT,
+  PATCH_TOPIC_ENDPOINT,
 } from './../RESTconf';
 import {
   ACTION_RESET_FILTERED_TWEETS,
   MUTATE_FILTERED_TWEETS,
-  MUTATE_TOOLBAR_HEADER
+  MUTATE_TOOLBAR_HEADER,
+  MUTATE_TOPIC,
 } from './../store/types';
+import {customFilteredTweets} from './getters';
+import Vue from 'vue';
+import {keyBy} from "lodash";
 
 export const actionFetchInitialData = ({
   state,
   commit
 }, twitterAccounts) => {
-  return new Promise((resolve, reject) => {
-    let nRequests = twitterAccounts.length;
-    let counter = 0;
-    twitterAccounts.forEach(twitterAccount => {
-      axios
-        .get(GET_ALL_TWEETS_ENDPOINT(twitterAccount))
-        .then(response => {
-          if (response.data !== null) {
-            let payload = {};
-            payload[twitterAccount] = response.data;
-            state.tweets = Object.assign({}, state.tweets, payload);
-          }
-          counter++;
-          if (nRequests === counter) {
-            state.initialDataLoaded = true;
-            resolve();
-          }
-        })
-        .catch(e => {
-          reject(e);
-        });
-    });
-  });
+  const tweetRequests = twitterAccounts.flatMap(twitterAccount => (
+    axios
+      .get(GET_ALL_TWEETS_ENDPOINT(twitterAccount))
+      .then(response => {
+        if (response.data !== null) {
+          let payload = {[twitterAccount]: response.data};
+          state.tweets = Object.assign({}, state.tweets, payload);
+        }
+      })
+  ));
+
+  const topicRequests = twitterAccounts.flatMap(twitterAccount => (
+    axios
+      .get(GET_TOPICS_ENDPOINT(twitterAccount))
+      .then(response => {
+        const topics = response.data.map(topic => ({...topic, accountName: twitterAccount}));
+        Vue.set(state.topics, twitterAccount, keyBy(topics, 'topic_id'));
+      })
+  ));
+
+  return Promise.all([...tweetRequests, ...topicRequests]).then(() => {state.initialDataLoaded = true;});
 };
 export const actionFilterTweets = ({
   state,
   dispatch,
   commit
 }, payload) => {
-  // 1. reset filtered tweets to all tweets
-  // 2. check if the user filters for a specific account => if yes, filter
-  // 3. check if the user filters for a time-frame => if yes, filter
-  // 4. update state via commit
   state.dataUpToDate = false;
   state.dataUpdating = true;
 
-  // 1. reset filtered tweets to all tweets
   dispatch(ACTION_RESET_FILTERED_TWEETS);
 
-  let tmpFilteredTweets = [];
-
-  // 2. check if the user filters for a specific account => if yes, filter
-  payload.twitterAccounts.forEach(account => {
-    tmpFilteredTweets = tmpFilteredTweets.concat(state.tweets[account]);
-  });
-
-  // 3. check if the user filters for a time-frame => if yes, filter
-  if (payload.fromDate !== null) {
-    let dateFromCompare = moment(payload.fromDate, 'YYYY-MM-DD').format('YYYYMMDD');
-    tmpFilteredTweets = tmpFilteredTweets.filter(tweet => tweet.created_at >= dateFromCompare);
-  }
-  if (payload.toDate !== null) {
-    let dateToCompare = moment(payload.toDate, 'YYYY-MM-DD').format('YYYYMMDD');
-    tmpFilteredTweets = tmpFilteredTweets.filter(tweet => tweet.created_at <= dateToCompare);
-  }
-
-  // 4. update state via commit
   state.dataUpdating = false;
-  commit(MUTATE_FILTERED_TWEETS, tmpFilteredTweets);
+  commit(MUTATE_FILTERED_TWEETS, customFilteredTweets(state)(payload));
   state.dataUpToDate = true;
 };
 export const actionResetFilteredTweets = ({
@@ -120,4 +100,11 @@ export const setToolbarHeader = ({
   commit
 }, title) => {
   commit(MUTATE_TOOLBAR_HEADER, title);
+};
+export const patchTopic = ({state, commit}, {accountName, topicId, patch}) => {
+  const previousTopicState = {...state.topics[accountName][topicId]};
+  commit(MUTATE_TOPIC, {accountName, topicId, patch});
+
+  axios.patch(PATCH_TOPIC_ENDPOINT(accountName, topicId), patch)
+    .catch(() => commit(MUTATE_TOPIC, {accountName, topicId, patch: previousTopicState}));
 };

@@ -9,6 +9,7 @@ export const ACTION_FILTER_TWEETS = 'actionFilterTweets';
 export const ACTION_RESET_FILTERED_TWEETS = 'actionResetFilteredTweets';
 export const ACTION_REMOVE_UNLABELED_TWEET = 'actionRemoveUnlabeledTweet';
 export const ACTION_SET_TOOLBAR_HEADER = 'setToolbarHeader';
+export const ACTION_PATCH_TOPIC = 'patchTopic';
 
 /*
  *  Mutation types
@@ -28,6 +29,7 @@ export const MUTATE_UNLABELED_TWEETS = 'mutateUnlabeledTweets';
 export const MUTATE_INITIAL_DATA = 'mutateInitalData';
 export const MUTATE_FILTERED_TWEETS = 'mutateFilteredTweets';
 export const MUTATE_TOOLBAR_HEADER = 'mutateToobarHeader';
+export const MUTATE_TOPIC = 'mutateTopic';
 export const MUTATE_TOPIC_INTEREST = 'mutateTopicInterest';
 
 /*
